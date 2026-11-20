@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ESHOT Nerede" />
+  <title>ESHOT Yakın Duraklar & Otobüs Takip</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #e11d48;
+      --accent-soft: rgba(225, 29, 72, 0.18);
+      --blue: #38bdf8;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .logo-badge {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    h1 { font-size: 15px; margin: 0; font-weight: 700; white-space: nowrap; }
+    .sub-title { font-size: 11px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 11px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-green { background: #059669; border-color: #059669; color: #fff; }
+    .btn:active { transform: scale(0.97); }
+    .container { max-width: 640px; margin: 0 auto; padding: 12px 14px 48px 14px; }
+    #map {
+      width: 100%;
+      height: 240px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 6px;
+      z-index: 1;
+      background: #1e293b;
+    }
+    .map-hint {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    input[type="text"] {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus { border-color: var(--blue); }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .tab.active { background: var(--accent-soft); color: #fff; border-color: var(--accent); }
+    .status-bar {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+    }
+    .stop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .stop-name { font-weight: 700; font-size: 15px; line-height: 1.3; }
+    .stop-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .stop-lines {
+      font-size: 11px;
+      color: #cbd5e1;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--blue);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .badge-dist { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+    .fav-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .bus-list {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .bus-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 10px;
+      background: rgba(15, 23, 42, 0.65);
+      border-radius: 10px;
+      margin-bottom: 7px;
+      gap: 10px;
+    }
+    .bus-item:last-child { margin-bottom: 0; }
+    .line-no {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      min-width: 48px;
+      text-align: center;
+      padding: 6px 8px;
+      border-radius: 8px;
+    }
+    .bus-info { flex: 1; min-width: 0; }
+    .bus-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bus-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .eta-box { text-align: right; min-width: 68px; }
+    .eta-min { font-size: 16px; font-weight: 800; color: var(--green); }
+    .eta-min.soon { color: var(--amber); }
+    .eta-stops { font-size: 11px; color: var(--muted); }
+    .alert-box {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fcd34d;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+    .data-panel {
+      background: #172033;
+      border: 1px solid var(--blue);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .data-panel h3 { margin: 0 0 8px 0; font-size: 14px; color: var(--blue); }
+    .data-panel p { margin: 0 0 10px 0; font-size: 12px; color: #cbd5e1; line-height: 1.45; }
+    .data-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .loader { text-align: center; padding: 16px; color: var(--muted); font-size: 13px; }
+    .refresh-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .manual-bind { display: flex; gap: 6px; margin-top: 10px; }
+    .manual-bind input { padding: 7px 10px; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="logo-badge">ESHOT</span>
+    <div>
+      <h1>Yakın Duraklar</h1>
+      <div class="sub-title" id="gpsStatus">Konum hazırlanıyor...</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" onclick="toggleDataPanel()" title="Resmi Durak Veritabanı">⚙️ Veri</button>
+    <button class="btn btn-primary" onclick="locateUser()">📍 Konum</button>
+  </div>
+</header>
+
+<div class="container">
+  <div id="dataPanel" class="data-panel">
+    <h3>📦 Resmi İzmir ESHOT Durak Veritabanı</h3>
+    <p id="dataPanelStatus">Durum kontrol ediliyor...</p>
+    <p>
+      1. Adım: Resmi İzmir Büyükşehir Belediyesi CSV dosyasını indirin:<br>
+      <a class="btn" style="margin-top:6px;font-size:12px;" href="https://openfiles.izmir.bel.tr/211488/docs/eshot-otobus-duraklari.csv" target="_blank" rel="noopener">⬇️ eshot-otobus-duraklari.csv İndir</a>
+    </p>
+    <p>
+      2. Adım: İndirdiğiniz CSV dosyasını aşağıdan seçin. Tüm duraklar anında hafızaya kaydedilir ve isterseniz GitHub için hazır <b>duraklar.js</b> olarak indirebilirsiniz:
+    </p>
+    <div class="data-actions">
+      <label class="btn btn-primary" style="cursor:pointer;">
+        📂 CSV Seç ve Yükle
+        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none;" onchange="handleCSVUpload(event)" />
+      </label>
+      <button class="btn btn-green" id="btnExportJs" style="display:none;" onclick="exportDuraklarJS()">💾 duraklar.js İndir</button>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  <div class="map-hint">Haritada herhangi bir noktaya dokunarak o bölgedeki durakları görebilirsiniz.</div>
+
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Durak adı, Hat No (örn: 446), Semt veya Durak No..." onkeyup="if(event.key==='Enter') runSearch()" />
+    <button class="btn btn-primary" onclick="runSearch()">Ara</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="tabNearby" onclick="switchTab('nearby')">📍 Yakınımdakiler</div>
+    <div class="tab" id="tabFav" onclick="switchTab('fav')">⭐ Favorilerim (<span id="favCount">0</span>)</div>
+  </div>
+
+  <div id="noticeBox" class="alert-box" style="display:none;"></div>
+
+  <div class="status-bar">
+    <span id="listSummary">Duraklar hazırlanıyor...</span>
+    <span id="dbStatus"></span>
+  </div>
+
+  <div id="stopsContainer"></div>
+</div>
+
+<!-- Aynı klasörde duraklar.js varsa otomatik yüklenir -->
+<script src="duraklar.js" onerror="window.ESHOT_DURAKLAR = window.ESHOT_DURAKLAR || [];"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+  const IZTEK_BASE = "https://openapi.izmir.bel.tr/api/iztek/duragayaklasanotobusler";
+  const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+  const FAV_KEY = "eshot_fav_stops_v6";
+  const RESOLVED_KEY = "eshot_resolved_ids_v6";
+  const IDB_NAME = "eshot_official_db";
+  const IDB_STORE = "stops_store";
+
+  let map, userMarker, stopMarkersLayer;
+  let userLat = 38.6060;
+  let userLon = 27.0690;
+  let officialStops = []; // [{id, name, lat, lon, lines}]
+  let currentStops = [];
+  let favorites = [];
+  let resolvedIds = {};
+  try {
+    favorites = JSON.parse(localStorage.getItem(FAV_KEY) || "[]");
+    resolvedIds = JSON.parse(localStorage.getItem(RESOLVED_KEY) || "{}");
+  } catch (e) {}
+
+  let activeTab = "nearby";
+  let selectedStopId = null;
+  let autoRefreshTimer = null;
+
+  // Türkçe karakter uyumlu küçük harf dönüşümü
+  function trLower(str) {
+    return String(str || "")
+      .replace(/İ/g, "i")
+      .replace(/I/g, "ı")
+      .toLowerCase();
+  }
+
+  // IndexedDB yardımcıları (11.000 durağı tarayıcıda kalıcı tutmak için)
+  function openIDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveStopsToIDB(rawArray) {
+    try {
+      const db = await openIDB();
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).put(rawArray, "all_stops");
+    } catch (e) {}
+  }
+
+  async function loadStopsFromIDB() {
+    try {
+      const db = await openIDB();
+      return await new Promise((resolve) => {
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const req = tx.objectStore(IDB_STORE).get("all_stops");
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function hydrateStops(rawArray) {
+    return rawArray.map(item => ({
+      id: String(item[0]),
+      osmId: String(item[0]),
+      name: String(item[1] || ("ESHOT Durağı #" + item[0])),
+      lat: Number(item[2]),
+      lon: Number(item[3]),
+      lines: String(item[4] || "")
+    }));
+  }
+
+  async function initOfficialDatabase() {
+    // 1. Önce aynı klasördeki duraklar.js dosyasını kontrol et
+    if (Array.isArray(window.ESHOT_DURAKLAR) && window.ESHOT_DURAKLAR.length > 50) {
+      officialStops = hydrateStops(window.ESHOT_DURAKLAR);
+      updateDbIndicators("duraklar.js");
+      return true;
+    }
+    // 2. Yoksa tarayıcı IndexedDB hafızasını kontrol et
+    const saved = await loadStopsFromIDB();
+    if (Array.isArray(saved) && saved.length > 50) {
+      window.ESHOT_DURAKLAR = saved;
+      officialStops = hydrateStops(saved);
+      updateDbIndicators("Tarayıcı Hafızası");
+      return true;
+    }
+    updateDbIndicators("Harita Yedeği");
+    return false;
+  }
+
+  function updateDbIndicators(sourceName) {
+    const dbEl = document.getElementById("dbStatus");
+    const panelStatus = document.getElementById("dataPanelStatus");
+    const exportBtn = document.getElementById("btnExportJs");
+    if (officialStops.length > 50) {
+      dbEl.textContent = `${officialStops.length} resmi durak aktif`;
+      panelStatus.innerHTML = `<span style="color:#10b981;font-weight:700;">✓ ${officialStops.length} resmi ESHOT durağı yüklü (${sourceName}).</span> Tüm durak numaraları otomatik tanınıyor.`;
+      exportBtn.style.display = "inline-flex";
+    } else {
+      dbEl.textContent = "Resmi liste yüklü değil";
+      panelStatus.innerHTML = `<span style="color:#f59e0b;font-weight:700;">! Resmi durak listesi henüz yüklenmedi.</span> Şu an yedek harita modu kullanılıyor. Aşağıdan 1 kez CSV seçerseniz İzmir'deki tüm durak numaraları otomatik tanınır.`;
+      exportBtn.style.display = "none";
+    }
+  }
+
+  function toggleDataPanel() {
+    const panel = document.getElementById("dataPanel");
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+  }
+
+  // Tarayıcı içi CSV ayrıştırıcı ve duraklar.js üretici
+  function handleCSVUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const text = ev.target.result;
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+      if (lines.length < 2) {
+        alert("Geçerli bir CSV dosyası bulunamadı.");
+        return;
+      }
+      const headerLine = lines[0].replace(/^\uFEFF/, "");
+      const sep = (headerLine.split(";").length >= headerLine.split(",").length) ? ";" : ",";
+      const headers = headerLine.split(sep).map(h => h.replace(/"/g, "").trim().toUpperCase());
+
+      const idxId = headers.findIndex(h => h.includes("DURAK_ID") || h === "ID" || h === "DURAKID");
+      const idxName = headers.findIndex(h => h.includes("DURAK_ADI") || h === "AD" || h === "DURAKADI");
+      const idxLat = headers.findIndex(h => h.includes("ENLEM") || h.includes("KOORX") || h === "LAT");
+      const idxLon = headers.findIndex(h => h.includes("BOYLAM") || h.includes("KOORY") || h === "LON");
+      const idxLines = headers.findIndex(h => h.includes("HAT"));
+
+      if (idxId < 0 || idxLat < 0 || idxLon < 0) {
+        alert("CSV sütunları tanınamadı. Lütfen İzmir Büyükşehir Belediyesi'nin resmi eshot-otobus-duraklari.csv dosyasını seçin.");
+        return;
+      }
+
+      const rawArray = [];
+      const seen = new Set();
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(sep).map(c => c.replace(/^"|"$/g, "").trim());
+        const id = cols[idxId] || "";
+        if (!id || seen.has(id)) continue;
+        const lat = parseFloat((cols[idxLat] || "0").replace(",", "."));
+        const lon = parseFloat((cols[idxLon] || "0").replace(",", "."));
+        if (!(lat > 37.5 && lat < 39.5 && lon > 26.0 && lon < 28.5)) continue;
+        seen.add(id);
+        const name = idxName >= 0 ? (cols[idxName] || ("Durak #" + id)) : ("Durak #" + id);
+        const hatlar = idxLines >= 0 ? (cols[idxLines] || "") : "";
+        rawArray.push([id, name, Math.round(lat * 100000) / 100000, Math.round(lon * 100000) / 100000, hatlar]);
+      }
+
+      if (rawArray.length === 0) {
+        alert("Dosyadan geçerli durak koordinatı okunamadı.");
+        return;
+      }
+
+      window.ESHOT_DURAKLAR = rawArray;
+      officialStops = hydrateStops(rawArray);
+      await saveStopsToIDB(rawArray);
+      updateDbIndicators("Tarayıcı Hafızası");
+      showNotice("");
+      refreshNearbyStops();
+      alert(`Harika! ${rawArray.length} resmi ESHOT durağı yüklendi. GitHub Pages için "duraklar.js İndir" butonuna da basabilirsiniz.`);
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  function exportDuraklarJS() {
+    if (!Array.isArray(window.ESHOT_DURAKLAR) || window.ESHOT_DURAKLAR.length < 2) {
+      alert("Önce CSV dosyasını yüklemelisiniz.");
+      return;
+    }
+    const content = "// İzmir ESHOT Resmi Durak Veritabanı\nwindow.ESHOT_DURAKLAR = " + JSON.stringify(window.ESHOT_DURAKLAR) + ";\n";
+    const blob = new Blob([content], { type: "application/javascript;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "duraklar.js";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function initMap() {
+    map = L.map("map", { zoomControl: true }).setView([userLat, userLon], 15);
+    const streetLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "Tiles &copy; Esri",
+      maxZoom: 19
+    });
+    const satLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "Tiles &copy; Esri",
+      maxZoom: 19
+    });
+    streetLayer.addTo(map);
+    L.control.layers({ "Sokak Haritası": streetLayer, "Uydu Görünümü": satLayer }, null, { position: "topright" }).addTo(map);
+
+    stopMarkersLayer = L.layerGroup().addTo(map);
+    updateUserMarker(userLat, userLon, "Seçili Konum");
+
+    map.on("click", (e) => {
+      userLat = e.latlng.lat;
+      userLon = e.latlng.lng;
+      document.getElementById("gpsStatus").textContent = "Haritadan seçilen konum";
+      updateUserMarker(userLat, userLon, "Seçili Nokta");
+      activeTab = "nearby";
+      document.getElementById("tabNearby").classList.add("active");
+      document.getElementById("tabFav").classList.remove("active");
+      refreshNearbyStops();
+    });
+
+    updateFavCount();
+  }
+
+  function updateUserMarker(lat, lon, label) {
+    if (userMarker) map.removeLayer(userMarker);
+    userMarker = L.circleMarker([lat, lon], {
+      radius: 8, fillColor: "#0284c7", color: "#fff", weight: 2.5, fillOpacity: 1
+    }).addTo(map).bindPopup(label);
+  }
+
+  async function smartFetchJSON(url) {
+    const attempts = [
+      url,
+      "https://corsproxy.io/?" + encodeURIComponent(url),
+      "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)
+    ];
+    let lastErr;
+    for (const target of attempts) {
+      try {
+        const res = await fetch(target, { cache: "no-store" });
+        if (res.ok) {
+          const text = await res.text();
+          return JSON.parse(text);
+        }
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error("Sunucuya ulaşılamadı");
+  }
+
+  function getDistanceMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+
+  function locateUser() {
+    const gpsEl = document.getElementById("gpsStatus");
+    gpsEl.textContent = "GPS konumu alınıyor...";
+    if (!navigator.geolocation) {
+      gpsEl.textContent = "GPS desteklenmiyor (Haritadan seçin)";
+      refreshNearbyStops();
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userLat = pos.coords.latitude;
+        userLon = pos.coords.longitude;
+        gpsEl.textContent = `GPS Aktif (±${Math.round(pos.coords.accuracy)}m)`;
+        map.setView([userLat, userLon], 16);
+        updateUserMarker(userLat, userLon, "Buradasınız");
+        refreshNearbyStops();
+      },
+      () => {
+        gpsEl.textContent = "Konum izni yok (Haritaya dokunarak seçebilirsiniz)";
+        refreshNearbyStops();
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
+    );
+  }
+
+  function refreshNearbyStops() {
+    if (officialStops.length > 50) {
+      // Resmi duraklar.js / IndexedDB veritabanından 0 ms gecikmeyle en yakın 15 durağı bul
+      showNotice("");
+      currentStops = officialStops
+        .map(s => ({ ...s, dist: getDistanceMeters(userLat, userLon, s.lat, s.lon) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 15);
+      document.getElementById("listSummary").textContent = `En yakın ${currentStops.length} resmi ESHOT durağı`;
+      renderStops(currentStops);
+    } else {
+      // Henüz duraklar.js yüklenmediyse Overpass yedeğiyle devam et
+      fetchNearbyStopsOSM(userLat, userLon);
+    }
+  }
+
+  async function fetchNearbyStopsOSM(lat, lon) {
+    showNotice("İpucu: Tüm İzmir durak numaralarının otomatik tanınması için sağ üstteki ⚙️ Veri butonundan resmi CSV listesini bir kez yükleyebilirsiniz.");
+    document.getElementById("listSummary").textContent = "Yakındaki duraklar aranıyor...";
+    document.getElementById("stopsContainer").innerHTML = `<div class="loader">Harita üzerinden yakındaki duraklar taranıyor...</div>`;
+
+    const query = `[out:json][timeout:15];(node["highway"="bus_stop"](around:1500,${lat},${lon});node["public_transport"="platform"]["bus"="yes"](around:1500,${lat},${lon}););out body;`;
+    try {
+      const res = await fetch(OVERPASS_URL, {
+        method: "POST",
+        body: "data=" + encodeURIComponent(query)
+      });
+      if (!res.ok) throw new Error("Overpass yanıt vermedi");
+      const data = await res.json();
+      const seen = new Set();
+      currentStops = (data.elements || []).map(el => {
+        const tags = el.tags || {};
+        const osmId = String(el.id);
+        const refId = tags.ref || tags["ref:eshot"] || tags.local_ref || resolvedIds[osmId] || "";
+        return {
+          id: String(refId).trim(),
+          osmId: osmId,
+          name: tags.name || (refId ? `ESHOT Durağı #${refId}` : "Otobüs Durağı"),
+          lat: el.lat,
+          lon: el.lon,
+          lines: "",
+          dist: getDistanceMeters(lat, lon, el.lat, el.lon)
+        };
+      }).filter(s => {
+        const key = s.id ? s.id : `${s.name}_${s.lat.toFixed(4)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).sort((a, b) => a.dist - b.dist).slice(0, 15);
+
+      document.getElementById("listSummary").textContent = `Yakındaki ${currentStops.length} durak (Harita Yedeği)`;
+      renderStops(currentStops);
+    } catch (err) {
+      document.getElementById("stopsContainer").innerHTML = `<div class="loader">Harita durak servisine ulaşılamadı. Üstten 5 haneli Durak No ile arayabilir veya ⚙️ Veri menüsünden resmi listeyi yükleyebilirsiniz.</div>`;
+    }
+  }
+
+  async function runSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (!q) {
+      refreshNearbyStops();
+      return;
+    }
+    showNotice("");
+    activeTab = "nearby";
+    document.getElementById("tabNearby").classList.add("active");
+    document.getElementById("tabFav").classList.remove("active");
+
+    // 1. Doğrudan 4-6 haneli Durak No girildiyse
+    if (/^\d{4,6}$/.test(q)) {
+      const foundOfficial = officialStops.find(s => s.id === q);
+      const stopObj = foundOfficial
+        ? { ...foundOfficial, dist: getDistanceMeters(userLat, userLon, foundOfficial.lat, foundOfficial.lon) }
+        : { id: q, osmId: q, name: `ESHOT Durağı #${q}`, lat: 0, lon: 0, lines: "", dist: null };
+      currentStops = [stopObj];
+      if (stopObj.lat && stopObj.lon) map.setView([stopObj.lat, stopObj.lon], 16);
+      document.getElementById("listSummary").textContent = `Durak No: ${q}`;
+      renderStops(currentStops);
+      selectStop(q, true, q);
+      return;
+    }
+
+    // 2. Resmi veritabanı yüklüyse önce durak adı veya hat numarasında anında ara
+    if (officialStops.length > 50) {
+      const qLower = trLower(q);
+      const isLineSearch = /^\d{1,3}$/.test(q);
+      const matches = officialStops.filter(s => {
+        if (isLineSearch) {
+          const lineTokens = s.lines.split(/[-,\s]+/);
+          return lineTokens.includes(q);
+        }
+        return trLower(s.name).includes(qLower) || s.id.includes(q);
+      }).map(s => ({ ...s, dist: getDistanceMeters(userLat, userLon, s.lat, s.lon) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 25);
+
+      if (matches.length > 0) {
+        currentStops = matches;
+        document.getElementById("listSummary").textContent = isLineSearch
+          ? `${q} nolu hattın en yakın ${matches.length} durağı`
+          : `"${q}" için ${matches.length} resmi durak`;
+        map.setView([matches[0].lat, matches[0].lon], 14);
+        renderStops(currentStops);
+        return;
+      }
+    }
+
+    // 3. Durak adında eşleşme yoksa (semt/mahalle adıysa) Nominatim ile haritada bul
+    document.getElementById("listSummary").textContent = `"${q}" konumu aranıyor...`;
+    document.getElementById("stopsContainer").innerHTML = `<div class="loader">"${q}" bölgesi haritada bulunuyor...</div>`;
+    try {
+      const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q + ", İzmir, Türkiye")}`;
+      const res = await fetch(geoUrl);
+      if (!res.ok) throw new Error("Konum servisi yanıt vermedi");
+      const places = await res.json();
+      if (places && places.length > 0) {
+        userLat = parseFloat(places[0].lat);
+        userLon = parseFloat(places[0].lon);
+        document.getElementById("gpsStatus").textContent = `Aranan bölge: ${q}`;
+        map.setView([userLat, userLon], 15);
+        updateUserMarker(userLat, userLon, q);
+        refreshNearbyStops();
+      } else {
+        showNotice(`"${q}" için durak veya bölge bulunamadı.`);
+        document.getElementById("stopsContainer").innerHTML = "";
+      }
+    } catch (err) {
+      showNotice("Yer arama servisi yanıt vermedi.");
+      document.getElementById("stopsContainer").innerHTML = "";
+    }
+  }
+
+  function saveManualStopId(keyId, osmId) {
+    const inp = document.getElementById(`manual-id-${keyId}`);
+    if (!inp) return;
+    const val = inp.value.trim();
+    if (!/^\d{4,6}$/.test(val)) {
+      alert("Lütfen 4 ile 6 haneli geçerli bir ESHOT Durak Numarası girin.");
+      return;
+    }
+    const stopObj = currentStops.find(s => (s.id || s.osmId) === keyId);
+    if (stopObj) stopObj.id = val;
+    if (osmId) {
+      resolvedIds[osmId] = val;
+      try { localStorage.setItem(RESOLVED_KEY, JSON.stringify(resolvedIds)); } catch (e) {}
+    }
+    const badge = document.getElementById(`badge-${keyId}`);
+    if (badge) {
+      badge.className = "badge";
+      badge.textContent = `No: ${val}`;
+    }
+    fetchApproachingBuses(keyId, val);
+  }
+
+  function showNotice(msg) {
+    const box = document.getElementById("noticeBox");
+    if (!msg) { box.style.display = "none"; return; }
+    box.style.display = "block";
+    box.textContent = msg;
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById("tabNearby").classList.toggle("active", tab === "nearby");
+    document.getElementById("tabFav").classList.toggle("active", tab === "fav");
+    if (tab === "fav") {
+      const favList = favorites.map(f => ({
+        ...f,
+        dist: (f.lat && f.lon) ? getDistanceMeters(userLat, userLon, f.lat, f.lon) : null
+      }));
+      document.getElementById("listSummary").textContent = `Favori duraklarınız (${favList.length})`;
+      renderStops(favList);
+    } else {
+      document.getElementById("listSummary").textContent = `Listelenen duraklar (${currentStops.length})`;
+      renderStops(currentStops);
+    }
+  }
+
+  function toggleFavorite(e, stopId, stopName, lat, lon, lines) {
+    e.stopPropagation();
+    if (!stopId) return;
+    const idx = favorites.findIndex(f => f.id === stopId);
+    if (idx >= 0) favorites.splice(idx, 1);
+    else favorites.push({ id: stopId, osmId: stopId, name: stopName, lat: lat || 0, lon: lon || 0, lines: lines || "" });
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(favorites)); } catch (err) {}
+    updateFavCount();
+    if (activeTab === "fav") switchTab("fav");
+    else renderStops(currentStops);
+  }
+
+  function updateFavCount() {
+    document.getElementById("favCount").textContent = favorites.length;
+  }
+
+  function renderStops(list) {
+    const container = document.getElementById("stopsContainer");
+    stopMarkersLayer.clearLayers();
+
+    if (!list || list.length === 0) {
+      container.innerHTML = `<div class="loader">${activeTab === "fav" ? "Henüz favori durak eklemediniz." : "Bu alanda durak bulunamadı."}</div>`;
+      return;
+    }
+
+    list.forEach(s => {
+      if (s.lat && s.lon) {
+        const keyId = s.id || s.osmId;
+        const marker = L.circleMarker([s.lat, s.lon], {
+          radius: 7,
+          fillColor: keyId === selectedStopId ? "#10b981" : "#e11d48",
+          color: "#fff",
+          weight: 2,
+          fillOpacity: 0.95
+        }).addTo(stopMarkersLayer);
+        marker.bindPopup(`<b>${s.name}</b><br>${s.id ? "Durak No: " + s.id : "Durak kodu eksik"}`);
+        marker.on("click", () => selectStop(keyId, true, s.id));
+      }
+    });
+
+    container.innerHTML = list.map(s => {
+      const keyId = s.id || s.osmId;
+      const isFav = s.id && favorites.some(f => f.id === s.id);
+      const distBadge = s.dist !== null && s.dist !== undefined
+        ? `<span class="badge badge-dist">${s.dist < 1000 ? s.dist + " m" : (s.dist / 1000).toFixed(1) + " km"}</span>`
+        : "";
+      const idBadge = s.id
+        ? `<span class="badge" id="badge-${keyId}">No: ${s.id}</span>`
+        : `<span class="badge badge-warn" id="badge-${keyId}">Durak No Eksik</span>`;
+      const linesRow = s.lines ? `<div class="stop-lines">🚌 Hatlar: ${s.lines}</div>` : "";
+      const isOpen = keyId === selectedStopId;
+      const safeName = s.name.split("'").join("");
+      const safeLines = (s.lines || "").split("'").join("");
+
+      return `
+        <div class="card" id="card-${keyId}">
+          <div class="stop-header" onclick="selectStop('${keyId}', false, '${s.id}')">
+            <div>
+              <div class="stop-name">${s.name}</div>
+              <div class="stop-meta">${idBadge}${distBadge}</div>
+              ${linesRow}
+            </div>
+            ${s.id ? `<button class="fav-btn" onclick="toggleFavorite(event, '${s.id}', '${safeName}', ${s.lat || 0}, ${s.lon || 0}, '${safeLines}')">${isFav ? "⭐" : "☆"}</button>` : ""}
+          </div>
+          <div class="bus-list" id="buses-${keyId}" style="display:${isOpen ? "block" : "none"};">
+            <div class="loader">Yaklaşan otobüsler sorgulanıyor...</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function selectStop(keyId, forceOpen = false, realStopId = "") {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    let stopId = realStopId || (/^\d{4,6}$/.test(keyId) ? keyId : "");
+
+    if (!forceOpen && selectedStopId === keyId) {
+      const el = document.getElementById(`buses-${keyId}`);
+      if (el) el.style.display = "none";
+      selectedStopId = null;
+      return;
+    }
+
+    if (selectedStopId && selectedStopId !== keyId) {
+      const prevEl = document.getElementById(`buses-${selectedStopId}`);
+      if (prevEl) prevEl.style.display = "none";
+    }
+
+    selectedStopId = keyId;
+    const targetEl = document.getElementById(`buses-${keyId}`);
+    if (!targetEl) return;
+    targetEl.style.display = "block";
+
+    const stopObj = currentStops.find(s => (s.id || s.osmId) === keyId);
+    if (stopObj && stopObj.lat && stopObj.lon) {
+      map.panTo([stopObj.lat, stopObj.lon]);
+    }
+
+    if (!stopId) {
+      targetEl.innerHTML = `
+        <div style="font-size:12px;color:#fcd34d;line-height:1.45;">
+          Resmi durak veritabanı yüklü olmadığı için bu durağın kodu bilinmiyor. Üstteki <b>⚙️ Veri</b> butonundan resmi CSV'yi yükleyebilir veya durak numarasını aşağıya kaydedebilirsiniz:
+          <div class="manual-bind">
+            <input type="text" id="manual-id-${keyId}" placeholder="Durak No (örn: 21050)" />
+            <button class="btn btn-primary" onclick="saveManualStopId('${keyId}', '${stopObj ? stopObj.osmId : ""}')">Kaydet</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    targetEl.innerHTML = `<div class="loader">Canlı otobüs verisi çekiliyor (Durak #${stopId})...</div>`;
+    fetchApproachingBuses(keyId, stopId);
+    autoRefreshTimer = setInterval(() => {
+      if (selectedStopId === keyId) fetchApproachingBuses(keyId, stopId);
+    }, 20000);
+  }
+
+  async function fetchApproachingBuses(keyId, stopId) {
+    const targetEl = document.getElementById(`buses-${keyId}`);
+    if (!targetEl) return;
+
+    try {
+      const url = `${IZTEK_BASE}/${stopId}`;
+      const buses = await smartFetchJSON(url);
+      const nowStr = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+      if (!Array.isArray(buses) || buses.length === 0) {
+        targetEl.innerHTML = `
+          <div class="refresh-row">
+            <span>Durak #${stopId} • Son: ${nowStr}</span>
+            <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="fetchApproachingBuses('${keyId}','${stopId}')">↻ Yenile</button>
+          </div>
+          <div class="loader" style="padding:10px;">Şu an bu durağa yaklaşan aktif otobüs görünmüyor.</div>
+        `;
+        return;
+      }
+
+      buses.sort((a, b) => {
+        const aVal = a.KalanDakika ?? a.TahminiVarisSuresi ?? (a.KalanDurakSayisi * 2);
+        const bVal = b.KalanDakika ?? b.TahminiVarisSuresi ?? (b.KalanDurakSayisi * 2);
+        return aVal - bVal;
+      });
+
+      const itemsHTML = buses.map(b => {
+        const lineNo = b.HatNumarasi || b.HatId || "?";
+        const lineName = b.HatAdi || "ESHOT Hattı";
+        const stopsLeft = b.KalanDurakSayisi;
+        let minText = "Yolda", isSoon = false;
+
+        if (b.KalanDakika !== undefined && b.KalanDakika !== null) {
+          minText = b.KalanDakika <= 1 ? "Durakta" : `${b.KalanDakika} dk`;
+          isSoon = b.KalanDakika <= 3;
+        } else if (b.TahminiVarisSuresi !== undefined && b.TahminiVarisSuresi !== null) {
+          minText = b.TahminiVarisSuresi <= 1 ? "Durakta" : `${b.TahminiVarisSuresi} dk`;
+          isSoon = b.TahminiVarisSuresi <= 3;
+        } else if (stopsLeft !== undefined && stopsLeft !== null) {
+          if (stopsLeft === 0) { minText = "Durakta"; isSoon = true; }
+          else {
+            const est = Math.max(1, Math.round(stopsLeft * 1.8));
+            minText = `~${est} dk`;
+            isSoon = est <= 3;
+          }
+        }
+
+        const stopsLabel = (stopsLeft !== undefined && stopsLeft !== null)
+          ? (stopsLeft === 0 ? "Şu an durakta" : `${stopsLeft} durak kaldı`)
+          : "";
+
+        return `
+          <div class="bus-item">
+            <div class="line-no">${lineNo}</div>
+            <div class="bus-info">
+              <div class="bus-name">${lineName}</div>
+              <div class="bus-sub">${stopsLabel} ${b.BisikletAparatliMi ? "🚲" : ""} ${b.EngelliUyumluMu ? "♿" : ""}</div>
+            </div>
+            <div class="eta-box">
+              <div class="eta-min ${isSoon ? "soon" : ""}">${minText}</div>
+              <div class="eta-stops">${stopsLeft !== undefined ? stopsLeft + " durak" : ""}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      targetEl.innerHTML = `
+        <div class="refresh-row">
+          <span>Canlı • Durak #${stopId} • ${nowStr}</span>
+          <button class="btn" style="padding:3px 8px;font-size:11px;" onclick="fetchApproachingBuses('${keyId}','${stopId}')">↻ Yenile</button>
+        </div>
+        ${itemsHTML}
+      `;
+    } catch (err) {
+      targetEl.innerHTML = `
+        <div class="loader" style="color:#fca5a5;">
+          Canlı otobüs verisi alınamadı.<br><br>
+          <button class="btn" onclick="fetchApproachingBuses('${keyId}','${stopId}')">Tekrar Dene</button>
+        </div>
+      `;
+    }
+  }
+
+  // Başlangıç akışı
+  initMap();
+  initOfficialDatabase().then(() => {
+    locateUser();
+  });
+</script>
+</body>
+</html>
