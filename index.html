@@ -316,8 +316,8 @@
   const IDB_STORE = "stops_store";
 
   let map, userMarker, stopMarkersLayer;
-  let userLat = 38.6060;
-  let userLon = 27.0690;
+  let userLat = 38.5745;
+  let userLon = 27.0674;
   let officialStops = [];
   let currentStops = [];
   let favorites = [];
@@ -407,7 +407,7 @@
     const panelStatus = document.getElementById("dataPanelStatus");
     const exportBtn = document.getElementById("btnExportJs");
     if (officialStops.length > 50) {
-      dbEl.textContent = `${officialStops.length} resmi durak aktif`;
+      dbEl.textContent = `${officialStops.length} resmi durak (v2.2)`;
       panelStatus.innerHTML = `<span style="color:#10b981;font-weight:700;">✓ ${officialStops.length} resmi ESHOT durağı yüklü (${sourceName}).</span> Tüm durak numaraları otomatik tanınıyor.`;
       exportBtn.style.display = "inline-flex";
     } else {
@@ -904,6 +904,7 @@
         return;
       }
 
+      // Aynı hat ve aynı kalan durak sayısına sahip mükerrer kayıtları tekilleştir
       const buses = [];
       const seenKeys = new Set();
       for (const b of rawBuses) {
