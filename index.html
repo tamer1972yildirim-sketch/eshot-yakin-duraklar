@@ -305,7 +305,6 @@
   <div id="stopsContainer"></div>
 </div>
 
-<!-- Aynı klasörde duraklar.js varsa otomatik yüklenir -->
 <script src="duraklar.js" onerror="window.ESHOT_DURAKLAR = window.ESHOT_DURAKLAR || [];"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
@@ -511,7 +510,6 @@
       })
     ]);
 
-    // Ön tanımlı olarak Uydu Görünümü seçili
     satLayer.addTo(map);
     L.control.layers({ "Uydu Görünümü": satLayer, "Sokak Haritası": streetLayer }, null, { position: "topright" }).addTo(map);
 
@@ -892,10 +890,10 @@
 
     try {
       const url = `${IZTEK_BASE}/${stopId}`;
-      const buses = await smartFetchJSON(url);
+      const rawBuses = await smartFetchJSON(url);
       const nowStr = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-      if (!Array.isArray(buses) || buses.length === 0) {
+      if (!Array.isArray(rawBuses) || rawBuses.length === 0) {
         targetEl.innerHTML = `
           <div class="refresh-row">
             <span>Durak #${stopId} • Son: ${nowStr}</span>
@@ -904,6 +902,19 @@
           <div class="loader" style="padding:10px;">Şu an bu durağa yaklaşan aktif otobüs görünmüyor.</div>
         `;
         return;
+      }
+
+      const buses = [];
+      const seenKeys = new Set();
+      for (const b of rawBuses) {
+        const line = b.HatNumarasi || b.HatId || "?";
+        const stops = b.KalanDurakSayisi ?? "";
+        const time = b.KalanDakika ?? b.TahminiVarisSuresi ?? "";
+        const key = b.OtobusId || b.Plaka || `${line}_${stops}_${time}`;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          buses.push(b);
+        }
       }
 
       buses.sort((a, b) => {
