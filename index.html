@@ -15,7 +15,7 @@
 
   <!-- Tek Dosya Gömülü PWA Manifest (iOS & Android Tam Ekran + Uygulama İkonu) -->
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23e11d48'/%3E%3Ctext x='90' y='105' font-family='Arial,sans-serif' font-weight='900' font-size='44' fill='%23ffffff' text-anchor='middle'%3EESHOT%3C/text%3E%3C/svg%3E" />
-  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ESHOT%20Yak%C4%B1n%20Duraklar%22%2C%22short_name%22%3A%22ESHOT%20Nerede%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'110'%2520fill%3D'%2523e11d48'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'292'%2520font-family%3D'Arial%2Csans-serif'%2520font-weight%3D'900'%2520font-size%3D'124'%2520fill%3D'%2523ffffff'%2520text-anchor%3D'middle'%253EESHOT%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ESHOT%20Yak%C4%B1n%20Duraklar%22%2C%22short_name%22%3A%22ESHOT%20Nerede%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'110'%2520fill%3D'%2523e11d48'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'292'%2520font-family%3D'Arial%2Csans-serif'%2520font-weight%3D'900'%2520font-size%3D'124'%2520fill%3D'%2523ffffff'%2520text-anchor%3D'middle'%253EESHOT%253C%252Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
 
   <title>ESHOT Yakın Duraklar & Otobüs Takip | Tamer Yıldırım</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -56,39 +56,39 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
-      padding: calc(10px + env(safe-area-inset-top)) 12px 10px 12px;
+      padding: calc(8px + env(safe-area-inset-top)) 10px 8px 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
     }
-    .brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+    .brand { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1; }
     .brand-text { min-width: 0; flex: 1; }
     .logo-badge {
       background: var(--accent);
       color: #fff;
       font-weight: 800;
       font-size: 11px;
-      padding: 5px 7px;
-      border-radius: 8px;
-      letter-spacing: 0.4px;
+      padding: 5px 6px;
+      border-radius: 7px;
+      letter-spacing: 0.3px;
       flex-shrink: 0;
     }
-    h1 { font-size: 15px; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sub-title { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    h1 { font-size: 14px; margin: 0; font-weight: 700; white-space: nowrap; }
+    .sub-title { font-size: 10.5px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-actions { display: flex; gap: 5px; flex-shrink: 0; }
     .btn {
       background: var(--card);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 7px 10px;
-      border-radius: 10px;
+      padding: 6px 8px;
+      border-radius: 9px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       text-decoration: none;
     }
     .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -98,7 +98,7 @@
       width: 100%;
       max-width: 640px;
       margin: 0 auto;
-      padding: 12px 14px 28px 14px;
+      padding: 10px 12px 28px 12px;
       flex: 1;
     }
     #map {
@@ -114,42 +114,43 @@
       font-size: 11px;
       color: var(--muted);
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-    .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .search-row { display: flex; gap: 6px; margin-bottom: 10px; }
     input[type="text"] {
       flex: 1;
+      min-width: 0;
       background: var(--card);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 10px 12px;
+      padding: 9px 11px;
       border-radius: 10px;
       font-size: 16px;
       outline: none;
     }
     input:focus { border-color: var(--blue); }
-    .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
     .tab {
       flex: 1;
       text-align: center;
-      padding: 8px;
+      padding: 8px 6px;
       border-radius: 10px;
       background: var(--card);
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       border: 1px solid var(--border);
       cursor: pointer;
     }
     .tab.active { background: var(--accent-soft); color: #fff; border-color: var(--accent); }
     .status-bar {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .card {
       background: var(--card);
@@ -469,11 +470,11 @@
     const panelStatus = document.getElementById("dataPanelStatus");
     const exportBtn = document.getElementById("btnExportJs");
     if (officialStops.length > 50) {
-      dbEl.textContent = `${officialStops.length} resmi durak`;
+      dbEl.textContent = `${officialStops.length} durak aktif`;
       panelStatus.innerHTML = `<span style="color:#10b981;font-weight:700;">✓ ${officialStops.length} resmi ESHOT durağı yüklü (${sourceName}).</span> Tüm durak numaraları otomatik tanınıyor.`;
       exportBtn.style.display = "inline-flex";
     } else {
-      dbEl.textContent = "Resmi liste yüklü değil";
+      dbEl.textContent = "Resmi liste yok";
       panelStatus.innerHTML = `<span style="color:#f59e0b;font-weight:700;">! Resmi durak listesi henüz yüklenmedi.</span> Şu an yedek harita modu kullanılıyor. Aşağıdan 1 kez CSV seçerseniz İzmir'deki tüm durak numaraları otomatik tanınır.`;
       exportBtn.style.display = "none";
     }
@@ -634,7 +635,7 @@
     const gpsEl = document.getElementById("gpsStatus");
     gpsEl.textContent = "GPS konumu alınıyor...";
     if (!navigator.geolocation) {
-      gpsEl.textContent = "GPS desteklenmiyor (Haritadan seçin)";
+      gpsEl.textContent = "GPS desteklenmiyor";
       refreshNearbyStops();
       return;
     }
@@ -648,7 +649,7 @@
         refreshNearbyStops();
       },
       () => {
-        gpsEl.textContent = "Konum izni yok (Haritaya dokunarak seçebilirsiniz)";
+        gpsEl.textContent = "Haritaya dokunarak seçin";
         refreshNearbyStops();
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
@@ -662,7 +663,7 @@
         .map(s => ({ ...s, dist: getDistanceMeters(userLat, userLon, s.lat, s.lon) }))
         .sort((a, b) => a.dist - b.dist)
         .slice(0, 15);
-      document.getElementById("listSummary").textContent = `En yakın ${currentStops.length} resmi ESHOT durağı`;
+      document.getElementById("listSummary").textContent = `En yakın ${currentStops.length} durak`;
       renderStops(currentStops);
     } else {
       fetchNearbyStopsOSM(userLat, userLon);
@@ -703,7 +704,7 @@
         return true;
       }).sort((a, b) => a.dist - b.dist).slice(0, 15);
 
-      document.getElementById("listSummary").textContent = `Yakındaki ${currentStops.length} durak (Harita Yedeği)`;
+      document.getElementById("listSummary").textContent = `Yakındaki ${currentStops.length} durak`;
       renderStops(currentStops);
     } catch (err) {
       document.getElementById("stopsContainer").innerHTML = `<div class="loader">Harita durak servisine ulaşılamadı. Üstten 5 haneli Durak No ile arayabilir veya ⚙️ Veri menüsünden resmi listeyi yükleyebilirsiniz.</div>`;
@@ -750,15 +751,15 @@
       if (matches.length > 0) {
         currentStops = matches;
         document.getElementById("listSummary").textContent = isLineSearch
-          ? `${q} nolu hattın en yakın ${matches.length} durağı`
-          : `"${q}" için ${matches.length} resmi durak`;
+          ? `${q} hattı (${matches.length} durak)`
+          : `"${q}" (${matches.length} durak)`;
         map.setView([matches[0].lat, matches[0].lon], 14);
         renderStops(currentStops);
         return;
       }
     }
 
-    document.getElementById("listSummary").textContent = `"${q}" konumu aranıyor...`;
+    document.getElementById("listSummary").textContent = `"${q}" aranıyor...`;
     document.getElementById("stopsContainer").innerHTML = `<div class="loader">"${q}" bölgesi haritada bulunuyor...</div>`;
     try {
       const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q + ", İzmir, Türkiye")}`;
@@ -768,7 +769,7 @@
       if (places && places.length > 0) {
         userLat = parseFloat(places[0].lat);
         userLon = parseFloat(places[0].lon);
-        document.getElementById("gpsStatus").textContent = `Aranan bölge: ${q}`;
+        document.getElementById("gpsStatus").textContent = `Bölge: ${q}`;
         map.setView([userLat, userLon], 15);
         updateUserMarker(userLat, userLon, q);
         refreshNearbyStops();
@@ -820,7 +821,7 @@
         ...f,
         dist: (f.lat && f.lon) ? getDistanceMeters(userLat, userLon, f.lat, f.lon) : null
       }));
-      document.getElementById("listSummary").textContent = `Favori duraklarınız (${favList.length})`;
+      document.getElementById("listSummary").textContent = `Favorileriniz (${favList.length})`;
       renderStops(favList);
     } else {
       document.getElementById("listSummary").textContent = `Listelenen duraklar (${currentStops.length})`;
