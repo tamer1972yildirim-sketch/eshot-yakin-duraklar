@@ -3,9 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  
+  <!-- iPhone (iOS Safari) Tam Ekran Ayarları -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ESHOT Nerede" />
+
+  <!-- Android (Chrome) Tam Ekran ve Tema Ayarları -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0f172a" />
+
+  <!-- Tek Dosya Gömülü PWA Manifest (iOS & Android Tam Ekran + Uygulama İkonu) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23e11d48'/%3E%3Ctext x='90' y='105' font-family='Arial,sans-serif' font-weight='900' font-size='44' fill='%23ffffff' text-anchor='middle'%3EESHOT%3C/text%3E%3C/svg%3E" />
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ESHOT%20Yak%C4%B1n%20Duraklar%22%2C%22short_name%22%3A%22ESHOT%20Nerede%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'110'%2520fill%3D'%2523e11d48'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'292'%2520font-family%3D'Arial%2Csans-serif'%2520font-weight%3D'900'%2520font-size%3D'124'%2520fill%3D'%2523ffffff'%2520text-anchor%3D'middle'%253EESHOT%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
+
   <title>ESHOT Yakın Duraklar & Otobüs Takip</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
@@ -22,23 +33,28 @@
       --border: #334155;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
+    html, body {
       margin: 0;
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100dvh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      overscroll-behavior-y: none;
+    }
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
     }
     header {
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: rgba(15, 23, 42, 0.94);
+      background: rgba(15, 23, 42, 0.96);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
+      padding: calc(10px + env(safe-area-inset-top)) 14px 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -99,7 +115,7 @@
       color: var(--text);
       padding: 10px 12px;
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 16px;
       outline: none;
     }
     input:focus { border-color: var(--blue); }
@@ -243,7 +259,7 @@
       color: var(--muted);
     }
     .manual-bind { display: flex; gap: 6px; margin-top: 10px; }
-    .manual-bind input { padding: 7px 10px; font-size: 13px; }
+    .manual-bind input { padding: 7px 10px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -407,7 +423,7 @@
     const panelStatus = document.getElementById("dataPanelStatus");
     const exportBtn = document.getElementById("btnExportJs");
     if (officialStops.length > 50) {
-      dbEl.textContent = `${officialStops.length} resmi durak (v2.2)`;
+      dbEl.textContent = `${officialStops.length} resmi durak (v2.3)`;
       panelStatus.innerHTML = `<span style="color:#10b981;font-weight:700;">✓ ${officialStops.length} resmi ESHOT durağı yüklü (${sourceName}).</span> Tüm durak numaraları otomatik tanınıyor.`;
       exportBtn.style.display = "inline-flex";
     } else {
@@ -904,7 +920,6 @@
         return;
       }
 
-      // Aynı hat ve aynı kalan durak sayısına sahip mükerrer kayıtları tekilleştir
       const buses = [];
       const seenKeys = new Set();
       for (const b of rawBuses) {
