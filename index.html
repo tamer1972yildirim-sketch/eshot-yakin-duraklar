@@ -319,7 +319,7 @@
   let map, userMarker, stopMarkersLayer;
   let userLat = 38.6060;
   let userLon = 27.0690;
-  let officialStops = []; // [{id, name, lat, lon, lines}]
+  let officialStops = [];
   let currentStops = [];
   let favorites = [];
   let resolvedIds = {};
@@ -332,7 +332,6 @@
   let selectedStopId = null;
   let autoRefreshTimer = null;
 
-  // Türkçe karakter uyumlu küçük harf dönüşümü
   function trLower(str) {
     return String(str || "")
       .replace(/İ/g, "i")
@@ -340,7 +339,6 @@
       .toLowerCase();
   }
 
-  // IndexedDB yardımcıları (11.000 durağı tarayıcıda kalıcı tutmak için)
   function openIDB() {
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(IDB_NAME, 1);
@@ -389,13 +387,11 @@
   }
 
   async function initOfficialDatabase() {
-    // 1. Önce aynı klasördeki duraklar.js dosyasını kontrol et
     if (Array.isArray(window.ESHOT_DURAKLAR) && window.ESHOT_DURAKLAR.length > 50) {
       officialStops = hydrateStops(window.ESHOT_DURAKLAR);
       updateDbIndicators("duraklar.js");
       return true;
     }
-    // 2. Yoksa tarayıcı IndexedDB hafızasını kontrol et
     const saved = await loadStopsFromIDB();
     if (Array.isArray(saved) && saved.length > 50) {
       window.ESHOT_DURAKLAR = saved;
@@ -427,7 +423,6 @@
     panel.style.display = panel.style.display === "block" ? "none" : "block";
   }
 
-  // Tarayıcı içi CSV ayrıştırıcı ve duraklar.js üretici
   function handleCSVUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -506,12 +501,19 @@
       attribution: "Tiles &copy; Esri",
       maxZoom: 19
     });
-    const satLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-      attribution: "Tiles &copy; Esri",
-      maxZoom: 19
-    });
-    streetLayer.addTo(map);
-    L.control.layers({ "Sokak Haritası": streetLayer, "Uydu Görünümü": satLayer }, null, { position: "topright" }).addTo(map);
+    const satLayer = L.layerGroup([
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        attribution: "Tiles &copy; Esri",
+        maxZoom: 19
+      }),
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 19
+      })
+    ]);
+
+    // Ön tanımlı olarak Uydu Görünümü seçili
+    satLayer.addTo(map);
+    L.control.layers({ "Uydu Görünümü": satLayer, "Sokak Haritası": streetLayer }, null, { position: "topright" }).addTo(map);
 
     stopMarkersLayer = L.layerGroup().addTo(map);
     updateUserMarker(userLat, userLon, "Seçili Konum");
@@ -595,7 +597,6 @@
 
   function refreshNearbyStops() {
     if (officialStops.length > 50) {
-      // Resmi duraklar.js / IndexedDB veritabanından 0 ms gecikmeyle en yakın 15 durağı bul
       showNotice("");
       currentStops = officialStops
         .map(s => ({ ...s, dist: getDistanceMeters(userLat, userLon, s.lat, s.lon) }))
@@ -604,7 +605,6 @@
       document.getElementById("listSummary").textContent = `En yakın ${currentStops.length} resmi ESHOT durağı`;
       renderStops(currentStops);
     } else {
-      // Henüz duraklar.js yüklenmediyse Overpass yedeğiyle devam et
       fetchNearbyStopsOSM(userLat, userLon);
     }
   }
@@ -661,7 +661,6 @@
     document.getElementById("tabNearby").classList.add("active");
     document.getElementById("tabFav").classList.remove("active");
 
-    // 1. Doğrudan 4-6 haneli Durak No girildiyse
     if (/^\d{4,6}$/.test(q)) {
       const foundOfficial = officialStops.find(s => s.id === q);
       const stopObj = foundOfficial
@@ -675,7 +674,6 @@
       return;
     }
 
-    // 2. Resmi veritabanı yüklüyse önce durak adı veya hat numarasında anında ara
     if (officialStops.length > 50) {
       const qLower = trLower(q);
       const isLineSearch = /^\d{1,3}$/.test(q);
@@ -700,7 +698,6 @@
       }
     }
 
-    // 3. Durak adında eşleşme yoksa (semt/mahalle adıysa) Nominatim ile haritada bul
     document.getElementById("listSummary").textContent = `"${q}" konumu aranıyor...`;
     document.getElementById("stopsContainer").innerHTML = `<div class="loader">"${q}" bölgesi haritada bulunuyor...</div>`;
     try {
@@ -972,7 +969,6 @@
     }
   }
 
-  // Başlangıç akışı
   initMap();
   initOfficialDatabase().then(() => {
     locateUser();
