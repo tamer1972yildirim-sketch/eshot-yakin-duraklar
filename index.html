@@ -907,10 +907,10 @@
       const buses = [];
       const seenKeys = new Set();
       for (const b of rawBuses) {
-        const line = b.HatNumarasi || b.HatId || "?";
+        const line = String(b.HatNumarasi || b.HatId || "?").trim();
         const stops = b.KalanDurakSayisi ?? "";
         const time = b.KalanDakika ?? b.TahminiVarisSuresi ?? "";
-        const key = b.OtobusId || b.Plaka || `${line}_${stops}_${time}`;
+        const key = `${line}_${stops}_${time}`;
         if (!seenKeys.has(key)) {
           seenKeys.add(key);
           buses.push(b);
