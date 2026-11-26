@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23e11d48'/%3E%3Ctext x='90' y='105' font-family='Arial,sans-serif' font-weight='900' font-size='44' fill='%23ffffff' text-anchor='middle'%3EESHOT%3C/text%3E%3C/svg%3E" />
   <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ESHOT%20Yak%C4%B1n%20Duraklar%22%2C%22short_name%22%3A%22ESHOT%20Nerede%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'110'%2520fill%3D'%2523e11d48'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'292'%2520font-family%3D'Arial%2Csans-serif'%2520font-weight%3D'900'%2520font-size%3D'124'%2520fill%3D'%2523ffffff'%2520text-anchor%3D'middle'%253EESHOT%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
 
-  <title>ESHOT Yakın Duraklar & Otobüs Takip</title>
+  <title>ESHOT Yakın Duraklar & Otobüs Takip | Tamer Yıldırım</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
     :root {
@@ -45,6 +45,8 @@
     }
     body {
       padding-bottom: env(safe-area-inset-bottom);
+      display: flex;
+      flex-direction: column;
     }
     header {
       position: sticky;
@@ -91,10 +93,16 @@
     .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
     .btn-green { background: #059669; border-color: #059669; color: #fff; }
     .btn:active { transform: scale(0.97); }
-    .container { max-width: 640px; margin: 0 auto; padding: 12px 14px 48px 14px; }
+    .container {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 12px 14px 28px 14px;
+      flex: 1;
+    }
     #map {
       width: 100%;
-      height: 240px;
+      height: clamp(320px, 44vh, 430px);
       border-radius: 14px;
       border: 1px solid var(--border);
       margin-bottom: 6px;
@@ -260,6 +268,35 @@
     }
     .manual-bind { display: flex; gap: 6px; margin-top: 10px; }
     .manual-bind input { padding: 7px 10px; font-size: 16px; }
+    .dev-footer {
+      margin-top: 26px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      text-align: center;
+    }
+    .dev-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: 0.3px;
+    }
+    .dev-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .dev-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -319,6 +356,14 @@
   </div>
 
   <div id="stopsContainer"></div>
+
+  <footer class="dev-footer">
+    <div class="dev-badge">
+      <span class="dev-dot"></span>
+      <span>Tasarım &amp; Geliştirme: Tamer Yıldırım</span>
+    </div>
+    <div class="dev-sub">İzmir ESHOT Canlı Durak ve Hat Takip Sistemi • &copy; 2026</div>
+  </footer>
 </div>
 
 <script src="duraklar.js" onerror="window.ESHOT_DURAKLAR = window.ESHOT_DURAKLAR || [];"></script>
@@ -423,7 +468,7 @@
     const panelStatus = document.getElementById("dataPanelStatus");
     const exportBtn = document.getElementById("btnExportJs");
     if (officialStops.length > 50) {
-      dbEl.textContent = `${officialStops.length} resmi durak (v2.3)`;
+      dbEl.textContent = `${officialStops.length} resmi durak`;
       panelStatus.innerHTML = `<span style="color:#10b981;font-weight:700;">✓ ${officialStops.length} resmi ESHOT durağı yüklü (${sourceName}).</span> Tüm durak numaraları otomatik tanınıyor.`;
       exportBtn.style.display = "inline-flex";
     } else {
