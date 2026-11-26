@@ -15,7 +15,7 @@
 
   <!-- Tek Dosya Gömülü PWA Manifest (iOS & Android Tam Ekran + Uygulama İkonu) -->
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23e11d48'/%3E%3Ctext x='90' y='105' font-family='Arial,sans-serif' font-weight='900' font-size='44' fill='%23ffffff' text-anchor='middle'%3EESHOT%3C/text%3E%3C/svg%3E" />
-  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ESHOT%20Yak%C4%B1n%20Duraklar%22%2C%22short_name%22%3A%22ESHOT%20Nerede%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'110'%2520fill%3D'%2523e11d48'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'292'%2520font-family%3D'Arial%2Csans-serif'%2520font-weight%3D'900'%2520font-size%3D'124'%2520fill%3D'%2523ffffff'%2520text-anchor%3D'middle'%253EESHOT%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ESHOT%20Yak%C4%B1n%20Duraklar%22%2C%22short_name%22%3A%22ESHOT%20Nerede%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'110'%2520fill%3D'%2523e11d48'%2F%253E%253Ctext%2520x%3D'256'%2520y%3D'292'%2520font-family%3D'Arial%2Csans-serif'%2520font-weight%3D'900'%2520font-size%3D'124'%2520fill%3D'%2523ffffff'%2520text-anchor%3D'middle'%253EESHOT%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
 
   <title>ESHOT Yakın Duraklar & Otobüs Takip | Tamer Yıldırım</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -73,8 +73,19 @@
       letter-spacing: 0.5px;
       flex-shrink: 0;
     }
+    .title-row { display: flex; align-items: center; gap: 6px; }
     h1 { font-size: 15px; margin: 0; font-weight: 700; white-space: nowrap; }
-    .sub-title { font-size: 11px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .author-pill {
+      font-size: 10px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .sub-title { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
     .btn {
       background: var(--card);
@@ -305,7 +316,10 @@
   <div class="brand">
     <span class="logo-badge">ESHOT</span>
     <div>
-      <h1>Yakın Duraklar</h1>
+      <div class="title-row">
+        <h1>Yakın Duraklar</h1>
+        <span class="author-pill">Tamer Yıldırım</span>
+      </div>
       <div class="sub-title" id="gpsStatus">Konum hazırlanıyor...</div>
     </div>
   </div>
